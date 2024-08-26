@@ -1,5 +1,6 @@
 import os
 import uuid
+from time import sleep
 
 
 def dir_exists(path_to_dir: str) -> bool:
@@ -20,3 +21,9 @@ def get_unique_filename(path_to_file: str, filename: str) -> str:
     if filename_exists(path_to_file, new_filename):
         return get_unique_filename(path_to_file, filename)
     return new_filename
+
+
+def test_task():
+    print('sleep 10s')
+    sleep(10)
+    print('Done')

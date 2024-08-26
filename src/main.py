@@ -1,10 +1,11 @@
+import asyncio
 import os
 import aiofiles
 import magic
 import uvicorn
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, Request, HTTPException, status
 from src.config import DOWNLOAD_DIR
-from src.utils import dir_exists, dir_create, filename_exists, get_unique_filename
+from src.utils import dir_exists, dir_create, filename_exists, get_unique_filename, test_task
 
 app = FastAPI(
     name='MillionAgentsAPI',
@@ -33,5 +34,15 @@ async def post(upload_file: UploadFile):
     async with aiofiles.open(DOWNLOAD_DIR + path_filename, 'wb') as out_file:
         content = await upload_file.read()  # async read
         await out_file.write(content)  # async write
+    await upload_file.close()
     format = magic.from_buffer(content, mime=True)
-    return {"Result": "OK"}
+    return {'Result': 'OK'}
+
+
+@app.post('/upload')
+async def upload(request: Request):
+    filename = request.headers.get('Filename')
+    if not filename:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail='The request header must specify the name of the file being uploaded')
+    return {'Result': 'OK'}
