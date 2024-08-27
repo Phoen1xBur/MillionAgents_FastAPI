@@ -1,5 +1,5 @@
 import aiofiles
-from fastapi import APIRouter, UploadFile, Request, HTTPException, status, Depends
+from fastapi import APIRouter, UploadFile, HTTPException, status, Depends
 from magic import magic
 from sqlalchemy import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -54,14 +54,33 @@ async def upload_http(upload_file: UploadFile, session: AsyncSession = Depends(g
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
+# Потоковое сохранение файла на диск
 @router.post('/upload_stream')
-async def upload_stream(request: Request, session: AsyncSession = Depends(get_async_session)):
-    filename = request.headers.get('Filename')
-    if not filename:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail='The request header must specify the name of the file being uploaded')
-
+async def upload_stream(upload_file: UploadFile, session: AsyncSession = Depends(get_async_session)):
     create_if_exists_dir()
     # Получения уникального имени файла для сохранения, а так же его расширения
-    _file: FileExt = get_unique_filename(DOWNLOAD_DIR, filename)
+    _file: FileExt = get_unique_filename(DOWNLOAD_DIR, upload_file.filename)
+
+    # Сохранение файла на диск
+    async with aiofiles.open(DOWNLOAD_DIR + _file.name + _file.ext, 'wb') as out_file:
+        Mb50 = 1024*1024*50
+        chunk = await upload_file.read(Mb50)
+        file_format = magic.from_buffer(chunk, mime=True)  # Получаем формат файла
+        size = 0  # Размер файла в байтах
+        while chunk:
+            size += len(chunk)
+            await out_file.write(chunk)
+            chunk = await upload_file.read(Mb50)  # Получаем следующую часть файла
+    await upload_file.close()
+
+    # Сохранение информации о загруженном файле в БД
+    query = insert(file).values(
+        path_filename=_file.name + _file.ext,
+        original_name=upload_file.filename,
+        format=file_format,
+        extension=_file.ext,
+        size=size,
+    )
+    await session.execute(query)
+    await session.commit()
     return {'Result': 'OK'}

@@ -1,6 +1,5 @@
 import os
 import uuid
-from time import sleep
 from typing import NamedTuple
 
 FileExt = NamedTuple(
