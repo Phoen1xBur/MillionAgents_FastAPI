@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import os
 
+from src.CloudManager.YandexDiskCloudManager import YandexDiskCloudManager
 
 DOWNLOAD_DIR = os.getcwd() + '\\downloads\\'
 
@@ -13,4 +14,6 @@ DB_USER = os.environ.get('DB_USER')
 DB_PASS = os.environ.get('DB_PASS')
 
 YNDX_AUTH = os.environ.get('YNDX_AUTH')
+
+cloud_manager = YandexDiskCloudManager('MillionAgentsTest', YNDX_AUTH)
 

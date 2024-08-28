@@ -5,7 +5,8 @@ from sqlalchemy import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.File.models import file
-from src.config import DOWNLOAD_DIR
+from src.File.tasks import upload_file as upload_file_task
+from src.config import DOWNLOAD_DIR, cloud_manager
 from src.database import get_async_session
 from src.utils import dir_create, dir_exists, get_unique_filename, FileExt
 
@@ -33,7 +34,7 @@ async def upload_http(
         _file: FileExt = get_unique_filename(DOWNLOAD_DIR, upload_file.filename)
 
         # Сохранение файла на диск
-        async with aiofiles.open(DOWNLOAD_DIR + _file.name + _file.ext, 'wb') as out_file:
+        async with aiofiles.open(DOWNLOAD_DIR + _file.fullname, 'wb') as out_file:
             content = await upload_file.read()  # async read
             await out_file.write(content)  # async write
         await upload_file.close()
@@ -43,7 +44,7 @@ async def upload_http(
 
         # Сохранение информации о загруженном файле в БД
         query = insert(file).values(
-            path_filename=_file.name + _file.ext,
+            path_filename=_file.fullname,
             original_name=upload_file.filename,
             format=file_format,
             extension=_file.ext,
@@ -51,6 +52,8 @@ async def upload_http(
         )
         await session.execute(query)
         await session.commit()
+
+        background_tasks.add_task(upload_file_task, cloud_manager, DOWNLOAD_DIR + _file.fullname, _file.fullname)
 
         return {'Result': 'OK'}
     except Exception as e:

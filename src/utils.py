@@ -4,6 +4,7 @@ from typing import NamedTuple
 
 FileExt = NamedTuple(
     'FileExt',
+    fullname=str,
     name=str,
     ext=str,
 )
@@ -39,4 +40,4 @@ def get_unique_filename(path_to_file: str, filename: str) -> FileExt:
         # Если имя уже существует, генерируем новое
         new_filename = generate_filename(name)
     # Возвращаем уникальное имя с расширением этого файла
-    return FileExt(new_filename, ext)
+    return FileExt(new_filename + ext, new_filename, ext)
