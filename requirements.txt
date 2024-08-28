@@ -17,7 +17,8 @@ MarkupSafe==2.1.5
 pydantic==2.8.2
 pydantic_core==2.20.1
 python-dotenv==1.0.1
-python-magic-bin==0.4.14
+python-magic-bin==0.4.14 ; sys_platform != 'linux'
+python-magic==0.4.27 ; sys_platform == 'linux'
 python-multipart==0.0.9
 PyYAML==6.0.2
 requests==2.32.3

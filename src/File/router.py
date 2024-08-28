@@ -1,6 +1,6 @@
 import aiofiles
 from fastapi import APIRouter, UploadFile, HTTPException, status, Depends, BackgroundTasks
-from magic import magic
+import magic
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import FileResponse
 
