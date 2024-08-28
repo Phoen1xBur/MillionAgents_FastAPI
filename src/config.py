@@ -3,7 +3,7 @@ import os
 
 from src import CloudManager
 
-DOWNLOAD_DIR = os.getcwd() + '\\downloads\\'
+DOWNLOAD_DIR = os.getcwd() + '/downloads/'
 
 load_dotenv()
 
