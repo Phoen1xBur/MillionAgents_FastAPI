@@ -8,7 +8,7 @@ from alembic import context
 import os
 import sys
 from src.config import DB_HOST, DB_PORT, DB_USER, DB_NAME, DB_PASS
-from src.File.models import metadata as metadata_file
+from src.File.models import File
 
 # add src how main path
 sys.path.append(os.path.join(sys.path[0], 'src'))
@@ -35,7 +35,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = [
-    metadata_file,
+    File.metadata,
 ]
 
 
