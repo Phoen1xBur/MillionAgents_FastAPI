@@ -1,5 +1,5 @@
 import aiofiles
-from fastapi import APIRouter, UploadFile, HTTPException, status, Depends
+from fastapi import APIRouter, UploadFile, HTTPException, status, Depends, BackgroundTasks
 from magic import magic
 from sqlalchemy import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,11 @@ def create_if_exists_dir():
 
 
 @router.post('/upload')
-async def upload_http(upload_file: UploadFile, session: AsyncSession = Depends(get_async_session)):
+async def upload_http(
+        upload_file: UploadFile,
+        background_tasks: BackgroundTasks,
+        session: AsyncSession = Depends(get_async_session)
+):
     try:
         create_if_exists_dir()
         # Получения уникального имени файла для сохранения, а так же его расширения
@@ -56,7 +60,11 @@ async def upload_http(upload_file: UploadFile, session: AsyncSession = Depends(g
 
 # Потоковое сохранение файла на диск
 @router.post('/upload_stream')
-async def upload_stream(upload_file: UploadFile, session: AsyncSession = Depends(get_async_session)):
+async def upload_stream(
+        upload_file: UploadFile,
+        background_tasks: BackgroundTasks,
+        session: AsyncSession = Depends(get_async_session)
+):
     create_if_exists_dir()
     # Получения уникального имени файла для сохранения, а так же его расширения
     _file: FileExt = get_unique_filename(DOWNLOAD_DIR, upload_file.filename)
